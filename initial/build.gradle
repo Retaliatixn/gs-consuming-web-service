@@ -24,3 +24,37 @@ dependencies {
 tasks.named('test') {
 	useJUnitPlatform()
 }
+
+task wsimport {
+  description = 'Generate classes from wsdl using wsimport'
+
+  doLast {
+    project.mkdir(jaxwsSourceDir)
+    ant {
+      taskdef(name: 'wsimport',
+          classname: 'com.sun.tools.ws.ant.WsImport',
+          classpath: configurations.jaxws.asPath
+      )
+      wsimport(
+          keep: true,
+          destdir: jaxwsSourceDir,
+          extension: "true",
+          verbose: true,
+          wsdl: "http://localhost:8080/ws/countries.wsdl",
+          xnocompile: true,
+          package: "com.example.consumingwebservice.wsdl") {
+        xjcarg(value: "-XautoNameResolution")
+      }
+    }
+  }
+}
+
+sourceSets {
+  main {
+    java.srcDirs += jaxwsSourceDir
+  }
+}
+
+compileJava {
+  dependsOn wsimport
+}
